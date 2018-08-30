@@ -5,25 +5,177 @@
     <title>学生表</title>
     <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
     <link rel="stylesheet" href="/static/plugin/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/plugin/font-awesome/css/font-awesome.css">
+    <style>
+        .incon {
+            padding: 0 8px;
+        }
+    </style>
 </head>
 <body>
+
 <div class="container">
-    <table class="table table-bordered">
-        <thead>
+
+
+    <div style="padding: 10px 0">
+        <!-- Button trigger modal -->
+        <div>
+            <a class="btn btn-primary" id="addBtn">添加学生</a>
+            <span class="incon"></span>
+            <a class="btn btn-warning" id="addBtn">批量删除</a>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">填写学生资料</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <label for="inputName" class="col-sm-2 control-label">姓名</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" name="inputName" placeholder="姓名">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputAge" class="col-sm-2 control-label">年龄</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" name="inputAge" placeholder="年龄">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputGender" class="col-sm-2 control-label">性别</label>
+                                <div class="col-sm-10">
+                                    <label class="radio-inline">
+                                        <input type="radio" name="inputGender" value='1'> 男
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" name="inputGender" value='0'> 女
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputClass" class="col-sm-2 control-label">班级</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" name="selectClass">
+                                        {% for obj in stu_list %}
+                                            <option value="{{ obj.cs.id }}">{{ obj.cs.title }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <span id="error" class="incon text-danger"></span>
+                        <button type="button" class="btn btn-warning fa fa-window-close fa-lg fa-2x"
+                                data-dismiss="modal"></button>
+                        <button type="button" class="btn btn-primary fa fa-save fa-lg fa-2x" id="stuSave"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div>
+        <table class="table table-bordered table-hover">
+            <thead>
             <tr>
+                <td>ID</td>
                 <td>姓名</td>
                 <td>年龄</td>
                 <td>性别</td>
                 <td>班级</td>
                 <td>操作</td>
             </tr>
-        </thead>
-    </table>
+            </thead>
+            <tbody>
+            {% for obj in stu_list %}
+                <tr>
+                    <td>{{ obj.id }}</td>
+                    <td>{{ obj.name }}</td>
+                    <td>{{ obj.age }}</td>
+                    <td>{{ obj.gender }}</td>
+                    <td>{{ obj.cs.title }}</td>
+                    <td>
+                        <a class="fa fa-edit fa-lg "></a>
+                        <span class="incon">|</span>
+                        <a class="text-danger fa fa-trash-o fa-lg "></a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <!--最新的jQueryCDN-->
 <script src="/static/js/jquery-3.3.1.js"></script>
 <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
 <script src="/static/plugin/bootstrap/js/bootstrap.js"></script>
+<script>
+    $(function () {
+
+        bindAddEvent();
+        bindAddStu();
+    });
+
+    function bindAddEvent() {
+        $('#addBtn').click(function () {
+
+            $('#addModal').modal('show')
+        })
+    }
+
+    function bindAddStu() {
+
+        $('#stuSave').click(function () {
+            var postData = {};
+            $('#addModal').find('input,select').each(function () {
+                var n = $(this).attr('name');
+                var v = $(this).val();
+                if (n == 'inputGender') {
+                    if ($(this).prop('checked')) {
+                        postData[n] = v;
+                    }
+                } else {
+                    postData[n] = v;
+                }
+
+            });
+            $.ajax({
+                url: '/school/stuadd',
+                type: 'POST',
+                data: postData,
+                success: function (arg) {
+                    var dict = JSON.parse(arg);
+                    if (dict.status) {
+                        createtb(postData, dict.data);
+                        $('#addModal').modal('hide');
+
+                    } else {
+                        $('#error').text(dict.errormsg);
+                    }
+                }
+            })
+        });
+    }
+
+    function createtb(postData, cls_id) {
+        var tr = document.createElement('tr');
+
+        var tdid = document.createElement('tr');
+        tdid.innerHTML = cls_id;
+        $(tr).append(tdid);
+
+
+    }
+</script>
 </body>
 </html>
