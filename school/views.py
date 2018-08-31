@@ -32,21 +32,23 @@ def stuadd(request):
     except Exception as e:
         result['status'] = False
         result['errormsg'] = str(e)
+
     s = json.dumps(result)
     return HttpResponse(s)
 
 
 def delstu(request):
     result = {
-        'status': True,
-        'msg': None
-    }
-    try:
+            'status':True,
+            'msg':None
+        }
+    if request.method == 'POST':
+
         s_id = request.POST.get('s_id')
-        models.Students.objects.get(id=s_id).delete()
-    except Exception as e:
-        result['status'] = False
-        result['msg'] = str(e)
+        try:
+            models.Students.objects.get(id=s_id).delete()
+        except Exception as e:
+            result['status'] = False
+            result['msg'] = str(e)
     s = json.dumps(result)
     return HttpResponse(s)
-

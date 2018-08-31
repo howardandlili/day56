@@ -80,19 +80,78 @@
                 </div>
             </div>
         </div>
-
-        <div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-
-
-            <div class="modal-dialog modal-sm" role="document">
-            <div class="modal-content " style="padding: 8px" >
-              <a class="btn btn-primary" id="del_cencel">
-                <i class="fa fa-close fa-lg fa-3x"></i> 取消</a>
-              <a class="btn btn-danger" id="del_click">
-                <i class="fa fa-trash-o fa-lg fa-3x" ></i> 删除</a>
-            </div>
+        <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">填写学生资料</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <label for="inputName" class="col-sm-2 control-label">姓名</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" name="inputName" placeholder="姓名">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputAge" class="col-sm-2 control-label">年龄</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" name="inputAge" placeholder="年龄">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputGender" class="col-sm-2 control-label">性别</label>
+                                <div class="col-sm-10">
+                                    <label class="radio-inline">
+                                        <input type="radio" name="inputGender" value='1'> 男
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" name="inputGender" value='0'> 女
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputClass" class="col-sm-2 control-label">班级</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" name="selectClass">
+                                        {% for obj in cls_list %}
+                                            <option value="{{ obj.id }}">{{ obj.title }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <span id="error" class="incon text-danger"></span>
+                        <button type="button" class="btn btn-warning fa fa-window-close fa-lg fa-2x"
+                                data-dismiss="modal"></button>
+                        <button type="button" class="btn btn-primary fa fa-save fa-lg fa-2x" id="stuSave"></button>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+
+                <div class="alert alert-danger" role="alert">
+                    <div style="font-size: 20px">请确认删除学生:<span id="student"></span></div>
+                    <span id="sdel"></span>
+                    <span id="s_error"></span>
+                    <button type="button" class="btn btn-primary" id="s_cancel">取消</button>
+                    <button type="button" class="btn btn-danger" id="s_confirm">确认</button>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
     </div>
 
 
@@ -108,18 +167,18 @@
                 <td>操作</td>
             </tr>
             </thead>
-            <tbody id="stutb">
+            <tbody id="tb">
             {% for obj in stu_list %}
-                <tr>
-                    <td name="id">{{ obj.id }}</td>
-                    <td>{{ obj.name }}</td>
+                <tr s_id="{{ obj.id }}">
+                    <td >{{ obj.id }}</td>
+                    <td name="td_name">{{ obj.name }}</td>
                     <td>{{ obj.age }}</td>
                     <td>{{ obj.gender }}</td>
                     <td>{{ obj.cs.title }}</td>
                     <td>
-                        <a class="fa fa-edit fa-lg "></a>
+                        <a class="fa fa-edit fa-lg editrow"></a>
                         <span class="incon">|</span>
-                        <a class="text-danger fa fa-trash-o fa-lg" name="delStu"></a>
+                        <a class="text-danger fa fa-trash-o fa-lg delrow"></a>
                     </td>
                 </tr>
             {% endfor %}
@@ -138,11 +197,18 @@
         bindAddEvent();
         bindAddStu();
         bindDelStu();
+        bindDelConfirm();
+        bindEditStu();
     });
+
+    function bindEditStu() {
+        $('#tb').on('click','.editrow',function () {
+            $('#editModal').modal('show')
+        })
+    }
 
     function bindAddEvent() {
         $('#addBtn').click(function () {
-
             $('form')[0].reset();
             $('#addModal').modal('show')
         })
@@ -168,13 +234,14 @@
                 url: '/school/stuadd',
                 type: 'POST',
                 data: postData,
-                dataType: 'json',
                 success: function (arg) {
-                    if (arg.status) {
-                        createtb(postData, arg.data);
+                    var dict = JSON.parse(arg);
+                    if (dict.status) {
+                        createtb(postData, dict.data);
                         $('#addModal').modal('hide');
+
                     } else {
-                        $('#error').text(arg.errormsg);
+                        $('#error').text(dict.errormsg);
                     }
                 }
             })
@@ -182,72 +249,83 @@
     }
 
     function bindDelStu() {
-        $('a[name="delStu"]').click(function () {
+        $('#tb').on('click','.delrow',function () {
             $('#delModal').modal('show');
-            var s_id = $(this).parent().siblings('td[name=id]').text();
-            var tr_obj = $(this).parent().parent();
-            delFrom(tr_obj,s_id);
-        })
-    };
-
-    function delFrom(tr_obj,s_id) {
-        $('#del_click').click(function () {
-            var postData = {};
-
-            postData['s_id'] = s_id;
-            $.ajax({
-                url: '/school/delstu',
-                type: 'POST',
-                data: postData,
-                success: function (arg) {
-                    tr_obj.remove();
-                    $('#delModal').modal('hide')
-                }
-            })
-        });
-        $('#del_cencel').click(function () {
-            $('#delModal').modal('hide')
+            var obj_tr = $(this).parent().parent();
+            var s_id = obj_tr.attr('s_id');
+            var s_name = obj_tr.find('td[name="td_name"]').text();
+            $('#sdel').attr('s_id',s_id);
+            $('#student').text(s_name)
         })
     }
 
-    function createtb(postData, cls_id) {
+    function bindDelConfirm() {
+        $('#s_confirm').click(function () {
+            var s_id = $('#sdel').attr('s_id');
+            $.ajax({
+                url:'/school/delstu',
+                type:'POST',
+                data:{'s_id':s_id},
+                dataType:'json',
+                success:function (arg) {
+                    console.log(arg);
+                    if (arg.status){
+                        $('#delModal').modal('hide');
+                        $('tr[s_id="'+s_id+ '"]').remove()
+                    } else {
+                        $('#s_error').text(arg.msg)
+                    }
+                }
+            })
+        })
+    }
+
+    function createtb(postData, s_id) {
         var tr = document.createElement('tr');
+        tr.setAttribute('s_id',s_id);
 
-        var tdId = document.createElement('td');
-        tdId.innerHTML = cls_id;
-        $(tr).append(tdId);
-
-        var tdName = document.createElement('td');
-        tdName.innerHTML = postData.inputName;
-        $(tr).append(tdName);
-
-        var tdAge = document.createElement('td');
-        tdAge.innerHTML = postData.inputAge;
-        $(tr).append(tdAge);
-
+        var tdid = document.createElement('td');
+        tdid.innerHTML = s_id;
+        $(tr).append(tdid);
+        
+        var tdname = document.createElement('td');
+        tdname.setAttribute('name','td_name');
+        tdname.innerHTML = postData.inputName;
+        $(tr).append(tdname);
+        
+        var tdage = document.createElement('td');
+        tdage.innerHTML = postData.inputAge;
+        $(tr).append(tdage);
+        
         var tdgender = document.createElement('td');
-        if (postData.inputGender == '1') {
+        if (postData.inputGender=='1'){
             var gender = 'True'
-        } else {
+        }else {
             var gender = 'False'
         }
         tdgender.innerHTML = gender;
         $(tr).append(tdgender);
-
-
-        var tdclass = document.createElement('td');
-        tdclass.innerHTML = $('select[name=selectClass]').find('option[value=' + postData.selectClass + ']').text();
-        $(tr).append(tdclass);
-
-
+        
+        var tdcls = document.createElement('td');
+        tdcls.innerHTML = $('select[name="selectClass"]').find('option[value='+postData.selectClass +']').text();
+        $(tr).append(tdcls);
+        
+        
+        
         $(tr).append('<td>\n' +
-            '                        <a class="fa fa-edit fa-lg "></a>\n' +
+            '                        <a class="fa fa-edit fa-lg editrow"></a>\n' +
             '                        <span class="incon">|</span>\n' +
-            '                        <a class="text-danger fa fa-trash-o fa-lg "></a>\n' +
+            '                        <a class="text-danger fa fa-trash-o fa-lg delrow"></a>\n' +
             '                    </td>');
-
-        $('#stutb').append(tr)
+        
+        
+        
+        $('#tb').append(tr)
+        
     }
+    
+    
+
 </script>
 </body>
 </html>
