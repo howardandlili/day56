@@ -63,8 +63,8 @@
                                 <label for="inputClass" class="col-sm-2 control-label">班级</label>
                                 <div class="col-sm-10">
                                     <select class="form-control" name="selectClass">
-                                        {% for obj in stu_list %}
-                                            <option value="{{ obj.cs.id }}">{{ obj.cs.title }}</option>
+                                        {% for obj in cls_list %}
+                                            <option value="{{ obj.id }}">{{ obj.title }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -80,6 +80,24 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+
+                <div class="alert alert-danger" role="alert">
+                    <div style="font-size: 20px">请确认删除学生:<span id="student"></span></div>
+                    <span id="sdel"></span>
+                    <span id="s_error"></span>
+                    <button type="button" class="btn btn-primary" id="s_cancel">取消</button>
+                    <button type="button" class="btn btn-danger" id="s_confirm">确认</button>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
     </div>
 
 
@@ -95,18 +113,18 @@
                 <td>操作</td>
             </tr>
             </thead>
-            <tbody>
+            <tbody id="tb">
             {% for obj in stu_list %}
-                <tr>
-                    <td>{{ obj.id }}</td>
-                    <td>{{ obj.name }}</td>
+                <tr s_id="{{ obj.id }}">
+                    <td >{{ obj.id }}</td>
+                    <td name="td_name">{{ obj.name }}</td>
                     <td>{{ obj.age }}</td>
                     <td>{{ obj.gender }}</td>
                     <td>{{ obj.cs.title }}</td>
                     <td>
-                        <a class="fa fa-edit fa-lg "></a>
+                        <a class="fa fa-edit fa-lg deitrow"></a>
                         <span class="incon">|</span>
-                        <a class="text-danger fa fa-trash-o fa-lg "></a>
+                        <a class="text-danger fa fa-trash-o fa-lg delrow"></a>
                     </td>
                 </tr>
             {% endfor %}
@@ -124,11 +142,13 @@
 
         bindAddEvent();
         bindAddStu();
+        bindDelStu();
+        bindDelConfirm();
     });
 
     function bindAddEvent() {
         $('#addBtn').click(function () {
-
+            $('form')[0].reset();
             $('#addModal').modal('show')
         })
     }
@@ -167,15 +187,84 @@
         });
     }
 
-    function createtb(postData, cls_id) {
-        var tr = document.createElement('tr');
-
-        var tdid = document.createElement('tr');
-        tdid.innerHTML = cls_id;
-        $(tr).append(tdid);
-
-
+    function bindDelStu() {
+        $('#tb').on('click','.delrow',function () {
+            $('#delModal').modal('show');
+            var obj_tr = $(this).parent().parent();
+            var s_id = obj_tr.attr('s_id');
+            var s_name = obj_tr.find('td[name="td_name"]').text();
+            $('#sdel').attr('s_id',s_id);
+            $('#student').text(s_name)
+        })
     }
+
+    function bindDelConfirm() {
+        $('#s_confirm').click(function () {
+            var s_id = $('#sdel').attr('s_id');
+            $.ajax({
+                url:'/school/delstu',
+                type:'POST',
+                data:{'s_id':s_id},
+                dataType:'json',
+                success:function (arg) {
+                    console.log(arg);
+                    if (arg.status){
+                        $('#delModal').modal('hide');
+                        $('tr[s_id="'+s_id+ '"]').remove()
+                    } else {
+                        $('#s_error').text(arg.msg)
+                    }
+                }
+            })
+        })
+    }
+
+    function createtb(postData, s_id) {
+        var tr = document.createElement('tr');
+        tr.setAttribute('s_id',s_id);
+
+        var tdid = document.createElement('td');
+        tdid.innerHTML = s_id;
+        $(tr).append(tdid);
+        
+        var tdname = document.createElement('td');
+        tdname.setAttribute('name','td_name');
+        tdname.innerHTML = postData.inputName;
+        $(tr).append(tdname);
+        
+        var tdage = document.createElement('td');
+        tdage.innerHTML = postData.inputAge;
+        $(tr).append(tdage);
+        
+        var tdgender = document.createElement('td');
+        if (postData.inputGender=='1'){
+            var gender = 'True'
+        }else {
+            var gender = 'False'
+        }
+        tdgender.innerHTML = gender;
+        $(tr).append(tdgender);
+        
+        var tdcls = document.createElement('td');
+        tdcls.innerHTML = $('select[name="selectClass"]').find('option[value='+postData.selectClass +']').text();
+        $(tr).append(tdcls);
+        
+        
+        
+        $(tr).append('<td>\n' +
+            '                        <a class="fa fa-edit fa-lg deitrow"></a>\n' +
+            '                        <span class="incon">|</span>\n' +
+            '                        <a class="text-danger fa fa-trash-o fa-lg delrow"></a>\n' +
+            '                    </td>');
+        
+        
+        
+        $('#tb').append(tr)
+        
+    }
+    
+    
+
 </script>
 </body>
 </html>
