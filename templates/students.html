@@ -25,7 +25,7 @@
             <a class="btn btn-warning" id="addBtn">批量删除</a>
         </div>
 
-        <!-- Modal -->
+        <!-- 添加学生Modal -->
         <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -80,6 +80,7 @@
                 </div>
             </div>
         </div>
+        <!-- 编辑学生Modal -->
         <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -129,12 +130,12 @@
                         <span id="error" class="incon text-danger"></span>
                         <button type="button" class="btn btn-warning fa fa-window-close fa-lg fa-2x"
                                 data-dismiss="modal"></button>
-                        <button type="button" class="btn btn-primary fa fa-save fa-lg fa-2x" id="stuSave"></button>
+                        <button type="button" class="btn btn-primary fa fa-save fa-lg fa-2x" id="editStu"></button>
                     </div>
                 </div>
             </div>
         </div>
-
+        <!-- 删除学生Modal -->
         <div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
             <div class="modal-dialog" role="document">
 
@@ -147,9 +148,6 @@
                 </div>
             </div>
         </div>
-
-
-
 
 
     </div>
@@ -170,11 +168,11 @@
             <tbody id="tb">
             {% for obj in stu_list %}
                 <tr s_id="{{ obj.id }}">
-                    <td >{{ obj.id }}</td>
+                    <td name="td_id">{{ obj.id }}</td>
                     <td name="td_name">{{ obj.name }}</td>
-                    <td>{{ obj.age }}</td>
-                    <td>{{ obj.gender }}</td>
-                    <td>{{ obj.cs.title }}</td>
+                    <td name="td_age">{{ obj.age }}</td>
+                    <td name="td_gender">{{ obj.gender }}</td>
+                    <td name="td_cs">{{ obj.cs.title }}</td>
                     <td>
                         <a class="fa fa-edit fa-lg editrow"></a>
                         <span class="incon">|</span>
@@ -199,21 +197,84 @@
         bindDelStu();
         bindDelConfirm();
         bindEditStu();
+        editConfirm();
     });
-
+    //绑定修改学生事件
     function bindEditStu() {
-        $('#tb').on('click','.editrow',function () {
-            $('#editModal').modal('show')
+        $('#tb').on('click', '.editrow', function () {
+            var postForm = {};
+            $('#editModal').find('option,input').each(function () {
+                $(this).attr('checked', false);
+                $(this).attr('selected', false);
+            });
+
+            $('#editModal').modal('show');
+            //获取点击行的所有内容做成字典
+            $(this).parent().siblings().each(function () {
+                postForm[$(this).attr('name')] = $(this).text();
+            });
+
+
+
+            $('#editModal form').attr('s_id',postForm.td_id);
+            $('#editModal input[name=inputName]').val(postForm.td_name);
+            $('#editModal input[name=inputAge]').val(postForm.td_age);
+            //判断男女
+            if (postForm.td_gender == 'True') {
+                $('#editModal input[value=\'1\']').attr('checked', true)
+            } else {
+                $('#editModal input[value=\'0\']').attr('checked', true)
+            }
+            //循环找到对应的打上默认选择
+            $('#editModal select option').each(function () {
+                if ($(this).text() == postForm.td_cs){
+                    $(this).attr('selected', true)
+                }
+            });
         })
     }
+    //绑定修改学生确认
+    function editConfirm() {
+        var postData = {};
+        $('#editStu').click(function () {
+                postData['s_id'] = $('#editModal form').attr('s_id');
+                $('#editModal').find('input,select').each(function () {
+                    var n = $(this).attr('name');
+                    var v = $(this).val();
+                    if (n == 'inputGender') {
+                        if ($(this).prop('checked')) {
+                            postData[n] = v;
+                        }
+                    } else {
+                       postData[n] = v;
+                    }
+                });
+                $.ajax({
+                url: '/school/stuedit',
+                type: 'POST',
+                data: postData,
+                success: function (arg) {
+                    var dict = JSON.parse(arg);
+                    if (dict.status) {
+                        edittb(postData);
+                        $('#editModal').modal('hide');
 
+                    } else {
+                        $('#error').text(dict.errormsg);
+                    }
+                }
+            })
+
+            })
+    }
+    //绑定添加学生事件
     function bindAddEvent() {
         $('#addBtn').click(function () {
             $('form')[0].reset();
             $('#addModal').modal('show')
         })
     }
-
+    //绑定添加学生确认
     function bindAddStu() {
 
         $('#stuSave').click(function () {
@@ -247,31 +308,30 @@
             })
         });
     }
-
+    //绑定删除学生事件
     function bindDelStu() {
-        $('#tb').on('click','.delrow',function () {
+        $('#tb').on('click', '.delrow', function () {
             $('#delModal').modal('show');
             var obj_tr = $(this).parent().parent();
             var s_id = obj_tr.attr('s_id');
             var s_name = obj_tr.find('td[name="td_name"]').text();
-            $('#sdel').attr('s_id',s_id);
+            $('#sdel').attr('s_id', s_id);
             $('#student').text(s_name)
         })
     }
-
+    //绑定删除学生确认
     function bindDelConfirm() {
         $('#s_confirm').click(function () {
             var s_id = $('#sdel').attr('s_id');
             $.ajax({
-                url:'/school/delstu',
-                type:'POST',
-                data:{'s_id':s_id},
-                dataType:'json',
-                success:function (arg) {
-                    console.log(arg);
-                    if (arg.status){
+                url: '/school/delstu',
+                type: 'POST',
+                data: {'s_id': s_id},
+                dataType: 'json',
+                success: function (arg) {
+                    if (arg.status) {
                         $('#delModal').modal('hide');
-                        $('tr[s_id="'+s_id+ '"]').remove()
+                        $('tr[s_id="' + s_id + '"]').remove()
                     } else {
                         $('#s_error').text(arg.msg)
                     }
@@ -279,52 +339,66 @@
             })
         })
     }
-
+    //绑定创建学生列表不刷新
     function createtb(postData, s_id) {
         var tr = document.createElement('tr');
-        tr.setAttribute('s_id',s_id);
+        tr.setAttribute('s_id', s_id);
 
         var tdid = document.createElement('td');
+        tdid.setAttribute('name', 'td_id');
         tdid.innerHTML = s_id;
         $(tr).append(tdid);
-        
+
         var tdname = document.createElement('td');
-        tdname.setAttribute('name','td_name');
+        tdname.setAttribute('name', 'td_name');
         tdname.innerHTML = postData.inputName;
         $(tr).append(tdname);
-        
+
         var tdage = document.createElement('td');
+        tdage.setAttribute('name', 'td_age');
         tdage.innerHTML = postData.inputAge;
         $(tr).append(tdage);
-        
+
         var tdgender = document.createElement('td');
-        if (postData.inputGender=='1'){
+        tdgender.setAttribute('name', 'td_gender');
+        if (postData.inputGender == '1') {
             var gender = 'True'
-        }else {
+        } else {
             var gender = 'False'
         }
         tdgender.innerHTML = gender;
         $(tr).append(tdgender);
-        
+
         var tdcls = document.createElement('td');
-        tdcls.innerHTML = $('select[name="selectClass"]').find('option[value='+postData.selectClass +']').text();
+        tdcls.setAttribute('name', 'td_cs');
+        tdcls.innerHTML = $('select[name="selectClass"]').find('option[value=' + postData.selectClass + ']').text();
         $(tr).append(tdcls);
-        
-        
-        
+
+
         $(tr).append('<td>\n' +
             '                        <a class="fa fa-edit fa-lg editrow"></a>\n' +
             '                        <span class="incon">|</span>\n' +
             '                        <a class="text-danger fa fa-trash-o fa-lg delrow"></a>\n' +
             '                    </td>');
-        
-        
-        
+
+
         $('#tb').append(tr)
-        
+
     }
-    
-    
+    //绑定修改学生列表不刷新
+    function edittb(postData) {
+        var s_tr = $('tr[s_id='+ postData.s_id +']')
+        s_tr.children('td[name=td_name]').text(postData.inputName);
+        s_tr.children('td[name=td_age]').text(postData.inputAge);
+        if (postData.inputGender=='1'){
+            s_tr.children('td[name=td_gender]').text('True');
+        }else
+            s_tr.children('td[name=td_gender]').text('False');
+        console.log(postData)
+        var td_cs = $('#editModal select option[value='+ postData.selectClass +']').text()
+        s_tr.children('td[name=td_cs]').text(td_cs)
+
+    }
 
 </script>
 </body>

@@ -37,6 +37,35 @@ def stuadd(request):
     return HttpResponse(s)
 
 
+def stuedit(request):
+    result = {
+        'status': True,
+        'errormsg': None,
+        'data': None
+    }
+    try:
+        if request.method == 'POST':
+            print(request.POST)
+            s_id = request.POST.get('s_id')
+            age = request.POST.get('inputAge')
+            name = request.POST.get('inputName')
+            cs = request.POST.get('selectClass')
+            gender = request.POST.get('inputGender')
+            models.Students.objects.filter(id=s_id).update(
+                name=name,
+                age=age,
+                gender=gender,
+                cs_id=cs
+            )
+
+    except Exception as e:
+        result['status'] = False
+        result['errormsg'] = str(e)
+
+    s = json.dumps(result)
+    return HttpResponse(s)
+
+
 def delstu(request):
     result = {
             'status':True,
