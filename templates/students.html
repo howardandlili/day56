@@ -80,6 +80,60 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">填写学生资料</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <label for="inputName" class="col-sm-2 control-label">姓名</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" name="inputName" placeholder="姓名">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputAge" class="col-sm-2 control-label">年龄</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" name="inputAge" placeholder="年龄">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputGender" class="col-sm-2 control-label">性别</label>
+                                <div class="col-sm-10">
+                                    <label class="radio-inline">
+                                        <input type="radio" name="inputGender" value='1'> 男
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" name="inputGender" value='0'> 女
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputClass" class="col-sm-2 control-label">班级</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" name="selectClass">
+                                        {% for obj in cls_list %}
+                                            <option value="{{ obj.id }}">{{ obj.title }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <span id="error" class="incon text-danger"></span>
+                        <button type="button" class="btn btn-warning fa fa-window-close fa-lg fa-2x"
+                                data-dismiss="modal"></button>
+                        <button type="button" class="btn btn-primary fa fa-save fa-lg fa-2x" id="stuSave"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
             <div class="modal-dialog" role="document">
@@ -122,7 +176,7 @@
                     <td>{{ obj.gender }}</td>
                     <td>{{ obj.cs.title }}</td>
                     <td>
-                        <a class="fa fa-edit fa-lg deitrow"></a>
+                        <a class="fa fa-edit fa-lg editrow"></a>
                         <span class="incon">|</span>
                         <a class="text-danger fa fa-trash-o fa-lg delrow"></a>
                     </td>
@@ -144,7 +198,14 @@
         bindAddStu();
         bindDelStu();
         bindDelConfirm();
+        bindEditStu();
     });
+
+    function bindEditStu() {
+        $('#tb').on('click','.editrow',function () {
+            $('#editModal').modal('show')
+        })
+    }
 
     function bindAddEvent() {
         $('#addBtn').click(function () {
@@ -252,7 +313,7 @@
         
         
         $(tr).append('<td>\n' +
-            '                        <a class="fa fa-edit fa-lg deitrow"></a>\n' +
+            '                        <a class="fa fa-edit fa-lg editrow"></a>\n' +
             '                        <span class="incon">|</span>\n' +
             '                        <a class="text-danger fa fa-trash-o fa-lg delrow"></a>\n' +
             '                    </td>');
