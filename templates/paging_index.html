@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>分页组件</title>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="/static/plugin/bootstrap/css/bootstrap.css">
+    <!-- 最新版本的 awesome 图标 CSS 文件 -->
+    <link rel="stylesheet" href="/static/plugin/font-awesome/css/font-awesome.css">
+</head>
+<body>
+
+<ul>
+    {% for row in user_list %}
+        <li>{{ row }}</li>
+    {% endfor %}
+</ul>
+
+
+
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+            <li><a href="?p=1">首页</a></li>
+            <li><a href="?p={{ prev_page }}" id="prev_page">《《《</a></li>
+
+                {% for p in page_list %}
+                    <li><a href="?p={{ p }}">{{ p }}</a></li>
+                {% endfor %}
+
+            <li><a href="?p={{ next_page }}" id="next_page">》》》</a></li>
+            <li><a href="?p={{ pages }}">尾页</a></li>
+    </ul>
+</nav>
+
+<!--最新的jQueryCDN-->
+<script src="/static/js/jquery-3.3.1.js"></script>
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="/static/plugin/bootstrap/js/bootstrap.js"></script>
+<script>
+    if ({{ prev_page }}=={{ current }}){
+        $('#prev_page').addClass('hide')
+    }else if({{ next_page }}=={{ current }}){
+        $('#next_page').addClass('hide')
+    }
+</script>
+</body>
+</html>
