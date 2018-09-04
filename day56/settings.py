@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'school.apps.SchoolConfig',
     'paging.apps.PagingConfig',
+    'fromdata.apps.FromdataConfig',
 ]
 
 MIDDLEWARE = [
