@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户</title>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="/static/plugin/bootstrap/css/bootstrap.css">
+    <!-- 最新版本的 awesome 图标 CSS 文件 -->
+    <link rel="stylesheet" href="/static/plugin/font-awesome/css/font-awesome.css">
+</head>
+<body>
+
+<a href="add_user">添加</a>
+{% for user in user_list %}
+    <li>{{ user.id }}-{{ user.username }}-{{ user.email }}：<a href="edit-{{ user.id }}">编辑</a></li>
+{% endfor %}
+
+
+
+<!--最新的jQueryCDN-->
+<script src="/static/js/jquery-3.3.1.js"></script>
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="/static/plugin/bootstrap/js/bootstrap.js"></script>
+</body>
+</html>

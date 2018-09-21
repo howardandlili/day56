@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="/static/plugin/bootstrap/css/bootstrap.css">
+    <!-- 最新版本的 awesome 图标 CSS 文件 -->
+    <link rel="stylesheet" href="/static/plugin/font-awesome/css/font-awesome.css">
+</head>
+<body>
+<form id="fm" action="" method="post">
+    {% csrf_token %}
+    <div>用户名:{{ obj.user }}{{ obj.errors.user }}</div>
+    <div>密码:{{ obj.pwd }}{{ obj.errors.pwd }}</div>
+    <div>年龄:{{ obj.age }}{{ obj.errors.age }}</div>
+    <div>邮箱:{{ obj.email }}{{ obj.errors.email }}</div>
+    <div><button id="butAjax" onclick="ajaxForm">提交</button></div>
+</form>
+
+<!--最新的jQueryCDN-->
+<script src="/static/js/jquery-3.3.1.js"></script>
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="/static/plugin/bootstrap/js/bootstrap.js"></script>
+<script>
+    function ajaxForm() {
+        $.ajax({
+            url:'/fromdata/',
+            type:'POST',
+            data:$('fm').serialize(),
+            success:function (arg) {
+                console.log(arg)
+            }
+        })
+    }
+</script>
+</body>
+</html>
