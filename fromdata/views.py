@@ -73,3 +73,16 @@ def edit(request,nid):
             return redirect('users')
         else:
             return render(request,'form/edit.html',{'obj':obj})
+
+
+def upload(request):
+    if request.method == 'GET':
+        return render(request,'upload.html')
+    else:
+        user = request.POST.get('user')
+        img = request.FILES.get('img')
+
+        with open(img.name,'wb') as f:
+            for line in img.chunks():
+                f.write(line)
+        return HttpResponse('......')

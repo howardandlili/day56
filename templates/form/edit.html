@@ -12,6 +12,7 @@
     <form action="edit-{{ nid }}" method="post">
         <p>{{ obj.username }}{{ obj.username.errors }}</p>
         <p>{{ obj.email }}{{ obj.email.errors }}</p>
+        <p>{{ obj.city }}{{ obj.city.errors }}</p>
         <input type="submit" value="提交">
     </form>
 
